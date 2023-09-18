@@ -20,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private int clock = 0;
     private boolean running = false;
 
+    private boolean flagMode = false;
+
     private int dpToPixel(int dp) {
         float density = Resources.getSystem().getDisplayMetrics().density;
         return Math.round(dp * density);
@@ -40,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
             for (int j = 0; j < 10; j++) {
                 TextView tv = (TextView) li.inflate(R.layout.custom_cell_layout, grid, false);
                 //tv.setText(String.valueOf(i)+String.valueOf(j));
-                tv.setTextColor(Color.GRAY);
-                tv.setBackgroundColor(Color.GRAY);
+                tv.setTextColor(Color.GREEN);
+                tv.setBackgroundColor(Color.GREEN);
                 tv.setOnClickListener(this::onClickTV);
 
                 GridLayout.LayoutParams lp = (GridLayout.LayoutParams) tv.getLayoutParams();
@@ -61,6 +63,15 @@ public class MainActivity extends AppCompatActivity {
         }
         runTimer();
         running = true;
+
+        /* Pick code */
+        final TextView pickView = (TextView) findViewById(R.id.textView_p3);
+        if (flagMode){
+            pickView.setText(getString(R.string.flag));
+        }
+        else{
+            pickView.setText(getString(R.string.pick));
+        }
     }
 
     private int findIndexOfCellTextView(TextView tv) {
@@ -77,12 +88,21 @@ public class MainActivity extends AppCompatActivity {
         int i = n/COLUMN_COUNT;
         int j = n%COLUMN_COUNT;
         tv.setText(String.valueOf(i)+String.valueOf(j));
-        if (tv.getCurrentTextColor() == Color.GRAY) {
-            tv.setTextColor(Color.GREEN);
-            tv.setBackgroundColor(Color.parseColor("lime"));
-        }else {
+        if (tv.getCurrentTextColor() == Color.GREEN) {
             tv.setTextColor(Color.GRAY);
             tv.setBackgroundColor(Color.LTGRAY);
+        }
+    }
+
+    public void onClickPick(View view){
+        TextView flagPick = (TextView) view;
+        if (flagMode){
+            flagPick.setText(getString(R.string.pick));
+            flagMode = false;
+        }
+        else{
+            flagPick.setText(getString(R.string.flag));
+            flagMode = true;
         }
     }
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -92,16 +112,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runTimer() {
-        final TextView timeView = (TextView) findViewById(R.id.textView);
+        final TextView timeView = (TextView) findViewById(R.id.textView_clock);
         final Handler handler = new Handler();
 
         handler.post(new Runnable() {
             @Override
             public void run() {
-                int hours =clock/3600;
-                int minutes = (clock%3600) / 60;
-                int seconds = clock%60;
-                String time = String.format("%d:%02d:%02d", hours, minutes, seconds);
+                int seconds = clock;
+                String time = String.format("%03d", seconds);
                 timeView.setText(time);
 
                 if (running) {
