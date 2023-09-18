@@ -6,6 +6,7 @@ import androidx.gridlayout.widget.GridLayout;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -15,10 +16,9 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private static final int COLUMN_COUNT = 10;
-
-    // save the TextViews of all cells in an array, so later on,
-    // when a TextView is clicked, we know which cell it is
     private ArrayList<TextView> cell_tvs;
+    private int clock = 0;
+    private boolean running = false;
 
     private int dpToPixel(int dp) {
         float density = Resources.getSystem().getDisplayMetrics().density;
@@ -30,36 +30,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /* Grid code */
         cell_tvs = new ArrayList<TextView>();
 
-        // Method (2): add four dynamically created cells
         GridLayout grid = (GridLayout) findViewById(R.id.gridLayout01);
-//        for (int i = 2; i<=3; i++) {
-//            for (int j=0; j<=1; j++) {
-//                TextView tv = new TextView(this);
-//                tv.setHeight( dpToPixel(64) );
-//                tv.setWidth( dpToPixel(64) );
-//                tv.setTextSize( 32 );//dpToPixel(32) );
-//                tv.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
-//                tv.setTextColor(Color.GRAY);
-//                tv.setBackgroundColor(Color.GRAY);
-//                tv.setOnClickListener(this::onClickTV);
-//
-//                GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
-//                lp.setMargins(dpToPixel(2), dpToPixel(2), dpToPixel(2), dpToPixel(2));
-//                lp.rowSpec = GridLayout.spec(i);
-//                lp.columnSpec = GridLayout.spec(j);
-//
-//                grid.addView(tv, lp);
-//
-//                cell_tvs.add(tv);
-//            }
-//        }
-
         // Method (3): add four dynamically created cells with LayoutInflater
         LayoutInflater li = LayoutInflater.from(this);
-        for (int i = 0; i<=9; i++) {
-            for (int j=0; j<=COLUMN_COUNT-1; j++) {
+        for (int i = 0; i < 12; i++) {
+            for (int j = 0; j < 10; j++) {
                 TextView tv = (TextView) li.inflate(R.layout.custom_cell_layout, grid, false);
                 //tv.setText(String.valueOf(i)+String.valueOf(j));
                 tv.setTextColor(Color.GRAY);
@@ -76,6 +54,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /* Stopwatch code */
+        if (savedInstanceState != null) {
+            clock = savedInstanceState.getInt("clock");
+            running = savedInstanceState.getBoolean("running");
+        }
+        runTimer();
+        running = true;
     }
 
     private int findIndexOfCellTextView(TextView tv) {
@@ -99,5 +84,31 @@ public class MainActivity extends AppCompatActivity {
             tv.setTextColor(Color.GRAY);
             tv.setBackgroundColor(Color.LTGRAY);
         }
+    }
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putInt("clock", clock);
+        savedInstanceState.putBoolean("running", running);
+    }
+
+    private void runTimer() {
+        final TextView timeView = (TextView) findViewById(R.id.textView);
+        final Handler handler = new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                int hours =clock/3600;
+                int minutes = (clock%3600) / 60;
+                int seconds = clock%60;
+                String time = String.format("%d:%02d:%02d", hours, minutes, seconds);
+                timeView.setText(time);
+
+                if (running) {
+                    clock++;
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
     }
 }
