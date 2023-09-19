@@ -5,6 +5,7 @@ import androidx.gridlayout.widget.GridLayout;
 
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -19,18 +20,62 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<TextView> cell_tvs;
     private int clock = 0;
     private boolean running = false;
-
     private boolean flagMode = false;
+    private final int[][] grid_array = new int[12][10];
+    private boolean overFlag = false;
 
-    private int dpToPixel(int dp) {
-        float density = Resources.getSystem().getDisplayMetrics().density;
-        return Math.round(dp * density);
+    private void initArray(){
+        ArrayList<Integer> xarray = new ArrayList<>();
+        ArrayList<Integer> yarray = new ArrayList<>();
+        for (int i = 0; i < 7; i++){
+            int math1 = (int)(Math.random()*12);
+            int math2 = (int)(Math.random()*10);
+            while (xarray.contains(math1)){
+                math1 = (int)(Math.random()*12);
+            }
+            while (yarray.contains(math2)){
+                math2 = (int)(Math.random()*10);
+            }
+            xarray.add(math1);
+            yarray.add(math2);
+        }
+
+        for (int i = 0; i < 12; i++){
+            for (int j = 0; j < 10; j++){
+                for (int k = 0; k < 4; k++) {
+                    //System.out.print("(" + xarray.get(k) + ", " + yarray.get(k) + ");");
+                    if (xarray.get(k) == i && yarray.get(k) == j) {
+                        grid_array[i][j] = -1;
+                        //System.out.println("BOMB");
+                    }
+                    else if ((xarray.get(k) == i-1 && yarray.get(k) == j) ||
+                            (xarray.get(k) == i+1 && yarray.get(k) == j) ||
+                            (xarray.get(k) == i && yarray.get(k) == j-1) ||
+                            (xarray.get(k) == i && yarray.get(k) == j+1) ||
+                            (xarray.get(k) == i-1 && yarray.get(k) == j-1) ||
+                            (xarray.get(k) == i+1 && yarray.get(k) == j-1) ||
+                            (xarray.get(k) == i-1 && yarray.get(k) == j+1) ||
+                            (xarray.get(k) == i+1 && yarray.get(k) == j+1)
+                    ){
+                        if (grid_array[i][j] != -1)
+                            grid_array[i][j]++;
+                        //System.out.println("close!");
+                    }
+                    else {
+                        grid_array[i][j] = 0;
+                    }
+                }
+                //System.out.println(":" + i + ":" + j);
+            }
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initArray();
 
         /* Grid code */
         cell_tvs = new ArrayList<TextView>();
@@ -87,11 +132,35 @@ public class MainActivity extends AppCompatActivity {
         int n = findIndexOfCellTextView(tv);
         int i = n/COLUMN_COUNT;
         int j = n%COLUMN_COUNT;
-        tv.setText(String.valueOf(i)+String.valueOf(j));
-        if (tv.getCurrentTextColor() == Color.GREEN) {
-            tv.setTextColor(Color.GRAY);
-            tv.setBackgroundColor(Color.LTGRAY);
+        String display = "";
+
+        if (flagMode){
+            display = getString(R.string.flag);
+            tv.setText(display);
         }
+        else{
+            if (grid_array[i][j] == 0)
+                display = " ";
+            else if (grid_array[i][j] == -1) {
+                display = getString(R.string.mine);
+                overFlag = true;
+            }
+            else
+                display = Integer.toString(grid_array[i][j]);
+            tv.setText(display);
+            if (tv.getCurrentTextColor() == Color.GREEN) {
+                tv.setTextColor(Color.GRAY);
+                tv.setBackgroundColor(Color.LTGRAY);
+            }
+            if (overFlag){
+                endGame();
+            }
+        }
+    }
+
+    public void endGame(){
+        Intent intent = new Intent(this, ReceiveMessageActivity.class);
+        startActivity(intent);
     }
 
     public void onClickPick(View view){
