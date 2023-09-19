@@ -153,13 +153,15 @@ public class MainActivity extends AppCompatActivity {
                 tv.setBackgroundColor(Color.LTGRAY);
             }
             if (overFlag){
-                endGame();
+                endGame("lost");
             }
         }
     }
 
-    public void endGame(){
+    public void endGame(String state){
+        String message = Integer.toString(clock) + " " + state;
         Intent intent = new Intent(this, ReceiveMessageActivity.class);
+        intent.putExtra("com.example.sendmessage.MESSAGE", message);
         startActivity(intent);
     }
 

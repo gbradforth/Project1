@@ -15,10 +15,15 @@ public class ReceiveMessageActivity extends AppCompatActivity{
 
         Intent intent = getIntent();
         String message = intent.getStringExtra("com.example.sendmessage.MESSAGE");
-        message = message + " : Fight On!";
+        String [] messages = message.split(" ");
+        String output = "Used " + messages[0] + " seconds. \n";
+        if (messages[1].equals("lost"))
+            output += "You lost.";
+        else
+            output += "You won. \n Good job!";
 
         TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText(message);
+        textView.setText(output);
     }
 
     public void backToMain(View view) {
